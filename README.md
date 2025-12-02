@@ -1,1 +1,3 @@
-# Pawi-Can-Do-It
+# pawicandoit
+
+A new Flutter project.
