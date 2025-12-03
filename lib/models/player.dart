@@ -22,6 +22,8 @@ class Player extends SpriteComponent with HasGameReference<Game> {
 
   final maxSpeed = 300.0; // pixels per second
   final JoystickComponent joystick;
+  int score = 0;
+  int combo = 0;
   bool _flippedNegative = false;
 
   @override
@@ -63,5 +65,9 @@ class Player extends SpriteComponent with HasGameReference<Game> {
       );
     }
     super.update(dt);
+  }
+
+  void addScore(int i) {
+    score += i * (1 + combo ~/ 10);
   }
 }

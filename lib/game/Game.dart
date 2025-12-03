@@ -5,28 +5,20 @@ import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:pawicandoit/components/ItemSpawnerComponent.dart';
 import 'package:pawicandoit/models/player.dart';
 
 class Game extends FlameGame {
   late Player player;
+  late ItemSpawnerComponent itemSpawner = ItemSpawnerComponent();
 
   @override
   Future<void> onLoad() async {
     await Flame.images.load('player.png');
+    await Flame.images.load('Seaweed.jpg');
+    await Flame.images.load('trash.png');
 
-    final JoystickComponent joystick = JoystickComponent(
-      // bottom middle
-      position: Vector2(0, 0),
-      knob: CircleComponent(
-        radius: 15,
-        paint: Paint()..color = const Color(0xFF00FF00),
-      ),
-      background: CircleComponent(
-        radius: 50,
-        paint: Paint()..color = const Color(0x7700FF00),
-      ),
-      margin: const EdgeInsets.only(left: 40, bottom: 40),
-    );
+    final JoystickComponent joystick = createJoyStickComponent();
 
     player = Player(
       sprite: Sprite(Flame.images.fromCache('player.png')),
@@ -35,13 +27,9 @@ class Game extends FlameGame {
       joystick: joystick,
     );
 
-    add(
-      RectangleComponent(
-        size: size,
-        paint: Paint()..color = const Color.fromARGB(255, 255, 255, 255),
-      ),
-    );
+    // TODO: Implement adding background here
 
+    add(itemSpawner);
     add(player);
     add(joystick);
     return super.onLoad();
@@ -50,5 +38,19 @@ class Game extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
+  }
+
+  JoystickComponent createJoyStickComponent() {
+    final knobPaint = Paint()..color = const Color.fromARGB(200, 0, 0, 255);
+    final backgroundPaint = Paint()
+      ..color = const Color.fromARGB(100, 0, 0, 255);
+
+    final joystick = JoystickComponent(
+      knob: CircleComponent(radius: 30, paint: knobPaint),
+      background: CircleComponent(radius: 60, paint: backgroundPaint),
+      margin: const EdgeInsets.only(left: 40, bottom: 40),
+    );
+
+    return joystick;
   }
 }
