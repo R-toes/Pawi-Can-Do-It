@@ -1,14 +1,16 @@
 import 'dart:async' as async;
 
 import 'package:flame/components.dart';
+import 'package:pawicandoit/game/Game.dart';
 import 'package:pawicandoit/models/Item.dart';
 import 'package:pawicandoit/models/ItemFactory.dart';
 
-class ItemSpawnerComponent extends PositionComponent {
+class ItemSpawnerComponent extends PositionComponent
+    with HasGameReference<Game> {
   List<Item> spawnedItems = [];
 
-  final int foodSpawnRate = 70; // 70% chance to spawn food
-  final int trashSpawnRate = 30; // 30% chance to spawn trash
+  final int foodSpawnRate = 50;
+  final int trashSpawnRate = 50;
 
   late final ItemFactory itemFactory;
 
@@ -21,6 +23,8 @@ class ItemSpawnerComponent extends PositionComponent {
     size = Vector2(800, 50); // assuming game width is 800
   }
 
+  int counter = 0;
+
   @override
   async.FutureOr<void> onLoad() {
     return super.onLoad();
@@ -28,13 +32,17 @@ class ItemSpawnerComponent extends PositionComponent {
 
   @override
   void update(double dt) {
-    // Example: spawn an item every 2 seconds
-    async.Timer.periodic(Duration(seconds: 2), (timer) {
-      final newItem = itemFactory.generateRandomItem();
-      spawnedItems.add(newItem);
-      add(newItem);
-    });
-
+    counter++;
+    if (counter >= 120) {
+      counter = 0;
+      // spawn an item
+      final item = itemFactory.generateRandomItem(
+        fromX: 0,
+        toX: game.size.x.toInt(),
+      );
+      spawnedItems.add(item);
+      game.add(item);
+    }
     for (final item in spawnedItems) {
       if (item.position.y > 600) {
         item.removeFromParent();
