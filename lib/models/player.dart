@@ -1,12 +1,16 @@
 import 'dart:async';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 
 import 'package:pawicandoit/game/Game.dart' show Game;
+import 'package:pawicandoit/models/Item.dart';
 
-class Player extends SpriteComponent with HasGameReference<Game> {
+class Player extends SpriteComponent
+    with HasGameReference<Game>, CollisionCallbacks {
   Player({
     required Sprite sprite,
     required Vector2 position,
@@ -23,7 +27,7 @@ class Player extends SpriteComponent with HasGameReference<Game> {
   final maxSpeed = 300.0; // pixels per second
   final JoystickComponent joystick;
   int score = 0;
-  int combo = 0;
+  int combo = 1;
   bool _flippedNegative = false;
 
   @override
@@ -37,6 +41,8 @@ class Player extends SpriteComponent with HasGameReference<Game> {
         paint: Paint()..color = const Color.fromARGB(100, 255, 0, 0),
       ),
     );
+
+    add(RectangleHitbox());
     return super.onLoad();
   }
 
@@ -68,6 +74,26 @@ class Player extends SpriteComponent with HasGameReference<Game> {
   }
 
   void addScore(int i) {
-    score += i * (1 + combo ~/ 10);
+    // score = score + i * (combo/10 + 1)
+    score += i * combo;
+  }
+
+  void addCombo(int i) {
+    combo += i;
+  }
+
+  void resetCombo() {
+    combo = 1;
+  }
+
+  void eat(Item item) {
+    if (item is Food) {
+      addScore(100);
+      addCombo(1);
+      debugPrint('Score: $score, Combo: $combo');
+    } else if (item is Trash) {
+      resetCombo();
+      debugPrint('Ate trash! Score: $score, Combo reset to $combo');
+    }
   }
 }

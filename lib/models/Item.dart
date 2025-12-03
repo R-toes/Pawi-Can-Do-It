@@ -1,7 +1,9 @@
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:pawicandoit/models/player.dart';
 
-abstract class Item extends PositionComponent {
+abstract class Item extends PositionComponent with CollisionCallbacks {
   final String name;
   final Sprite sprite;
 
@@ -19,6 +21,8 @@ abstract class Item extends PositionComponent {
   Future<void> onLoad() async {
     final spriteComponent = SpriteComponent(sprite: sprite, size: size);
     add(spriteComponent);
+    // Add a collision hitbox so items register collisions with the player
+    add(RectangleHitbox());
     return super.onLoad();
   }
 
@@ -30,7 +34,15 @@ abstract class Item extends PositionComponent {
     super.update(dt);
   }
 
-  void eat(Player player) {}
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (other is Player) {
+      debugPrint('collision with player detected');
+      other.eat(this);
+      removeFromParent();
+    }
+  }
 }
 
 class Food extends Item {
@@ -40,12 +52,6 @@ class Food extends Item {
     Vector2? position,
     Vector2? size,
   }) : super(name: name, sprite: sprite, position: position, size: size);
-
-  @override
-  void eat(Player player) {
-    // Implement food-specific eating behavior here
-    print('$name has been eaten!');
-  }
 }
 
 class Trash extends Item {
@@ -55,10 +61,4 @@ class Trash extends Item {
     Vector2? position,
     Vector2? size,
   }) : super(name: name, sprite: sprite, position: position, size: size);
-
-  @override
-  void eat(Player player) {
-    // Implement trash-specific eating behavior here
-    print('$name is trash and should not be eaten!');
-  }
 }

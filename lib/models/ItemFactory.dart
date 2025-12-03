@@ -12,7 +12,7 @@ class ItemFactory {
   ItemFactory({required this.weights})
     : seed = DateTime.now().millisecondsSinceEpoch;
 
-  Item generateRandomItem({int fromX = 0, int toX = 750}) {
+  Item generateRandomItem({int fromX = 0, int toX = 700}) {
     seed = DateTime.now().millisecondsSinceEpoch;
     final randomValue = (seed % 100) / 100.0;
     Vector2 position = Vector2(fromX + (seed % (toX - fromX)).toDouble(), 0);

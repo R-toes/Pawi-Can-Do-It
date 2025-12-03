@@ -8,7 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:pawicandoit/components/ItemSpawnerComponent.dart';
 import 'package:pawicandoit/models/player.dart';
 
-class Game extends FlameGame {
+class Game extends FlameGame with HasCollisionDetection {
   late Player player;
   late ItemSpawnerComponent itemSpawner = ItemSpawnerComponent();
 

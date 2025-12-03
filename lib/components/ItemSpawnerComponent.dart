@@ -1,9 +1,11 @@
 import 'dart:async' as async;
 
 import 'package:flame/components.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pawicandoit/game/Game.dart';
 import 'package:pawicandoit/models/Item.dart';
 import 'package:pawicandoit/models/ItemFactory.dart';
+import 'package:pawicandoit/models/player.dart';
 
 class ItemSpawnerComponent extends PositionComponent
     with HasGameReference<Game> {
@@ -11,6 +13,7 @@ class ItemSpawnerComponent extends PositionComponent
 
   final int foodSpawnRate = 50;
   final int trashSpawnRate = 50;
+  int bottomLimit = 600;
 
   late final ItemFactory itemFactory;
 
@@ -20,7 +23,7 @@ class ItemSpawnerComponent extends PositionComponent
 
     // set position on top of the screen
     position = Vector2(0, 0);
-    size = Vector2(800, 50); // assuming game width is 800
+    size = Vector2(700, 50); // assuming game width is 800
   }
 
   int counter = 0;
@@ -44,8 +47,10 @@ class ItemSpawnerComponent extends PositionComponent
       game.add(item);
     }
     for (final item in spawnedItems) {
-      if (item.position.y > 600) {
+      if (item.position.y > bottomLimit) {
+        bottomLimit += 1;
         item.removeFromParent();
+        debugPrint('incrementing bottom limit to $bottomLimit');
       }
     }
     super.update(dt);

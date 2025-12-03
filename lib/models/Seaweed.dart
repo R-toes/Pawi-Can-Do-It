@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
+import 'package:flutter/material.dart';
 import 'package:pawicandoit/models/Item.dart';
 import 'package:pawicandoit/models/player.dart';
 
@@ -22,12 +23,5 @@ class Seaweed extends Food {
   void update(double dt) {
     // Implement seaweed-specific behavior here
     super.update(dt);
-  }
-
-  @override
-  void eat(Player player) {
-    // TODO: implement eat
-    player.addScore(100);
-    super.eat(player);
   }
 }
