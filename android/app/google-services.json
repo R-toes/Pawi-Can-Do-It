@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1043277520124",
+    "project_id": "project-turtle-8785b",
+    "storage_bucket": "project-turtle-8785b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043277520124:android:d4b5779ced8ada0aa14b79",
+        "android_client_info": {
+          "package_name": "com.example.pawicandoit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvOvf9mFxdEFXHh4HcAyzfB5aKwfawRII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

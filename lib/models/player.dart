@@ -88,12 +88,20 @@ class Player extends SpriteComponent
 
   void eat(Item item) {
     if (item is Food) {
-      addScore(100);
+      // 1. Call the main Game's score method
+      game.increaseScore();
+
+      // 2. Keep your original combo logic
       addCombo(1);
-      debugPrint('Score: $score, Combo: $combo');
+      debugPrint('Called game.increaseScore(). Player combo is now: $combo');
+
     } else if (item is Trash) {
+      // 1. Call the main Game's hit method
+      game.playerHit();
+
+      // 2. Keep your original combo logic
       resetCombo();
-      debugPrint('Ate trash! Score: $score, Combo reset to $combo');
+      debugPrint('Called game.playerHit(). Player combo reset.');
     }
   }
 }
