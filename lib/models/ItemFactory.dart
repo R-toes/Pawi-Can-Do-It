@@ -46,12 +46,18 @@ class ItemFactory {
       // Food category
       debugPrint('Spawning Food Item');
       final double speciesRand = _rng.nextDouble();
-      if (speciesRand < 0.40) {
+      // Desired raw chances: seaweed=75, anchovies=10, jellyfish=5 (sum=90).
+      // Normalize so probabilities sum to 1.0.
+      const double seaweedProb = 75.0 / 90.0; // ~0.8333333
+      const double anchoviesProb = 10.0 / 90.0; // ~0.1111111
+      // jellyfishProb = 1.0 - seaweedProb - anchoviesProb (~0.0555556)
+
+      if (speciesRand < seaweedProb) {
         return Seaweed(position: position);
-      } else if (speciesRand < 0.70) {
-        return Jellyfish(position: position);
-      } else {
+      } else if (speciesRand < seaweedProb + anchoviesProb) {
         return Anchovies(position: position);
+      } else {
+        return Jellyfish(position: position);
       }
     } else {
       // Trash category
