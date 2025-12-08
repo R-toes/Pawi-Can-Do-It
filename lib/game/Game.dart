@@ -24,6 +24,10 @@ class Game extends FlameGame with HasCollisionDetection {
 
     final JoystickComponent joystick = createJoyStickComponent();
 
+    // Position joystick at the bottom center of the screen
+    joystick.anchor = Anchor.bottomCenter;
+    joystick.position = Vector2(size.x / 2, size.y - 40);
+
     player = Player(
       sprite: Sprite(Flame.images.fromCache('player.png')),
       position: Vector2(size.x / 2, size.y / 2),
@@ -42,6 +46,21 @@ class Game extends FlameGame with HasCollisionDetection {
       position: Vector2(10, 30),
       textPaint: textPaint,
     );
+
+    // Add combo UI positioned above the joystick on the left side
+    uiManager.addTextComponent(
+      'combo',
+      text: '0 x',
+      // place near left edge; vertical position will be above joystick
+      position: Vector2(size.x - 50, joystick.position.y - 150),
+      textPaint: textPaint,
+    );
+
+    // Ensure the combo text is anchored bottom-left so it sits above joystick
+    final comboComp = uiManager.get('combo');
+    if (comboComp is TextComponent) {
+      comboComp.anchor = Anchor.bottomLeft;
+    }
 
     // Note: avatar sprite removed from UIManager — UI is focused on in-game UI
 
@@ -67,7 +86,6 @@ class Game extends FlameGame with HasCollisionDetection {
     final joystick = JoystickComponent(
       knob: CircleComponent(radius: 30, paint: knobPaint),
       background: CircleComponent(radius: 60, paint: backgroundPaint),
-      margin: const EdgeInsets.only(left: 40, bottom: 40),
     );
 
     return joystick;

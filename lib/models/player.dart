@@ -87,10 +87,22 @@ class Player extends SpriteComponent
 
   void addCombo(int i) {
     combo += i;
+    // Update combo UI via the game's UIManager if available
+    try {
+      game.uiManager.setData('combo', '$combo x');
+    } catch (_) {
+      // game or uiManager might not be available yet; ignore silently
+    }
   }
 
   void resetCombo() {
     combo = 1;
+    // Update combo UI when reset
+    try {
+      game.uiManager.setData('combo', '$combo x');
+    } catch (_) {
+      // ignore if uiManager isn't ready
+    }
   }
 
   void eat(Item item) {
