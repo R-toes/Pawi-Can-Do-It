@@ -43,6 +43,11 @@ abstract class Item extends PositionComponent with CollisionCallbacks {
       removeFromParent();
     }
   }
+
+  void eat(Player player) {
+    // Default behavior when eaten by player
+    debugPrint('$name eaten by player');
+  }
 }
 
 class Food extends Item {
@@ -52,6 +57,12 @@ class Food extends Item {
     Vector2? position,
     Vector2? size,
   }) : super(name: name, sprite: sprite, position: position, size: size);
+
+  @override
+  void eat(Player player) {
+    // TODO: implement eat
+    super.eat(player);
+  }
 }
 
 class Trash extends Item {
@@ -61,4 +72,10 @@ class Trash extends Item {
     Vector2? position,
     Vector2? size,
   }) : super(name: name, sprite: sprite, position: position, size: size);
+
+  @override
+  void eat(Player player) {
+    // TODO: implement eat
+    super.eat(player);
+  }
 }

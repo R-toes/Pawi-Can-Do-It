@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:pawicandoit/game/Game.dart' show Game;
 import 'package:pawicandoit/models/Item.dart';
+import 'package:pawicandoit/models/Seaweed.dart';
 
 class Player extends SpriteComponent
     with HasGameReference<Game>, CollisionCallbacks {
@@ -88,9 +89,9 @@ class Player extends SpriteComponent
 
   void eat(Item item) {
     if (item is Food) {
-      addScore(100);
-      addCombo(1);
-      debugPrint('Score: $score, Combo: $combo');
+      if (item is Seaweed) {
+        item.eat(this);
+      }
     } else if (item is Trash) {
       resetCombo();
       debugPrint('Ate trash! Score: $score, Combo reset to $combo');

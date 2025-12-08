@@ -24,4 +24,11 @@ class Seaweed extends Food {
     // Implement seaweed-specific behavior here
     super.update(dt);
   }
+
+  @override
+  void eat(Player player) {
+    // Seaweed-specific behavior when eaten by player
+    debugPrint('Seaweed eaten by player, increasing score by 5');
+    player.score += 5;
+  }
 }
