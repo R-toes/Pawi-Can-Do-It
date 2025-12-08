@@ -26,7 +26,7 @@ class Jellyfish extends Food {
   @override
   void eat(Player player) {
     debugPrint('Jellyfish eaten by player, +150 points and invulnerability');
-    player.score += 150;
+    player.addScore(150);
     player.applyInvulnerability(2.5);
   }
 }

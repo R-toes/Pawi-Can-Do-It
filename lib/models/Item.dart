@@ -26,7 +26,7 @@ abstract class Item extends PositionComponent with CollisionCallbacks {
     return super.onLoad();
   }
 
-  static double speed = 50.0;
+  static double speed = 100.0;
 
   @override
   void update(double dt) {

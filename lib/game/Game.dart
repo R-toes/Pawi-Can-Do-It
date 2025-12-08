@@ -6,11 +6,13 @@ import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:pawicandoit/components/ItemSpawnerComponent.dart';
+import 'package:pawicandoit/game/ui_manager.dart';
 import 'package:pawicandoit/models/player.dart';
 
 class Game extends FlameGame with HasCollisionDetection {
   late Player player;
   late ItemSpawnerComponent itemSpawner = ItemSpawnerComponent();
+  late UIManager uiManager;
 
   @override
   Future<void> onLoad() async {
@@ -29,11 +31,26 @@ class Game extends FlameGame with HasCollisionDetection {
       joystick: joystick,
     );
 
+    // Create UI manager and add some example UI components
+    uiManager = UIManager(this);
+    final textPaint = TextPaint(
+      style: const TextStyle(color: Colors.white, fontSize: 18),
+    );
+    uiManager.addTextComponent(
+      'score',
+      text: 'Score: 0',
+      position: Vector2(10, 30),
+      textPaint: textPaint,
+    );
+
+    // Note: avatar sprite removed from UIManager — UI is focused on in-game UI
+
     // TODO: Implement adding background here
 
     add(itemSpawner);
     add(player);
     add(joystick);
+    // Score UI will be updated automatically when player.addScore is called
     return super.onLoad();
   }
 

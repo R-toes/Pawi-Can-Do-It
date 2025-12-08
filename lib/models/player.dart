@@ -76,8 +76,13 @@ class Player extends SpriteComponent
   }
 
   void addScore(int i) {
-    // score = score + i * (combo/10 + 1)
     score += i * combo;
+    // Update UI via the game's UIManager if available
+    try {
+      game.uiManager.setData('score', 'Score: $score');
+    } catch (_) {
+      // game or uiManager might not be available yet; ignore silently
+    }
   }
 
   void addCombo(int i) {
@@ -90,9 +95,7 @@ class Player extends SpriteComponent
 
   void eat(Item item) {
     if (item is Food) {
-      if (item is Seaweed) {
-        item.eat(this);
-      }
+      item.eat(this);
     } else if (item is Trash) {
       if (ignoreTrash) {
         debugPrint('Ignored trash while invulnerable');
