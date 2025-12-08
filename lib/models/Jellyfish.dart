@@ -4,32 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:pawicandoit/models/Item.dart';
 import 'package:pawicandoit/models/player.dart';
 
-class Seaweed extends Food {
-  Seaweed({position, size})
+class Jellyfish extends Food {
+  Jellyfish({position, size})
     : super(
-        name: "Seaweed",
-        sprite: Sprite(Flame.images.fromCache('Seaweed.jpg')),
+        name: "Jellyfish",
+        sprite: Sprite(Flame.images.fromCache('Jellyfish.png')),
         position: position,
         size: size,
       );
 
   @override
   Future<void> onLoad() {
-    // TODO: implement onLoad
     return super.onLoad();
   }
 
   @override
   void update(double dt) {
-    // Implement seaweed-specific behavior here
     super.update(dt);
   }
 
   @override
   void eat(Player player) {
-    // Seaweed-specific behavior when eaten by player
-    debugPrint('Seaweed eaten by player, increasing score by 5');
-    player.addScore(100);
-    super.eat(player);
+    debugPrint('Jellyfish eaten by player, +150 points and invulnerability');
+    player.score += 150;
+    player.applyInvulnerability(2.5);
   }
 }

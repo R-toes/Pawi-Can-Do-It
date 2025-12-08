@@ -17,6 +17,8 @@ class Game extends FlameGame with HasCollisionDetection {
     await Flame.images.load('player.png');
     await Flame.images.load('Seaweed.jpg');
     await Flame.images.load('trash.png');
+    await Flame.images.load('Jellyfish.png');
+    await Flame.images.load('Anchovies.png');
 
     final JoystickComponent joystick = createJoyStickComponent();
 

@@ -29,6 +29,7 @@ class Player extends SpriteComponent
   final JoystickComponent joystick;
   int score = 0;
   int combo = 1;
+  bool ignoreTrash = false;
   bool _flippedNegative = false;
 
   @override
@@ -93,8 +94,22 @@ class Player extends SpriteComponent
         item.eat(this);
       }
     } else if (item is Trash) {
+      if (ignoreTrash) {
+        debugPrint('Ignored trash while invulnerable');
+        return;
+      }
+
       resetCombo();
       debugPrint('Ate trash! Score: $score, Combo reset to $combo');
     }
+  }
+
+  void applyInvulnerability(double seconds) {
+    ignoreTrash = true;
+    debugPrint('Invulnerability started for $seconds seconds');
+    Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()), () {
+      ignoreTrash = false;
+      debugPrint('Invulnerability ended');
+    });
   }
 }

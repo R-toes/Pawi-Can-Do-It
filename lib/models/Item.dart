@@ -26,11 +26,11 @@ abstract class Item extends PositionComponent with CollisionCallbacks {
     return super.onLoad();
   }
 
-  final double speed = 50.0;
+  static double speed = 50.0;
 
   @override
   void update(double dt) {
-    position += Vector2(0, 1 * speed) * dt;
+    position += Vector2(0, 1 * Item.speed) * dt;
     super.update(dt);
   }
 
@@ -60,8 +60,9 @@ class Food extends Item {
 
   @override
   void eat(Player player) {
-    // TODO: implement eat
-    super.eat(player);
+    // Default food behavior when eaten by player
+    debugPrint('Food $name eaten by player, increasing score by 10');
+    player.addCombo(1);
   }
 }
 
@@ -75,7 +76,6 @@ class Trash extends Item {
 
   @override
   void eat(Player player) {
-    // TODO: implement eat
-    super.eat(player);
+    player.resetCombo();
   }
 }
