@@ -79,6 +79,8 @@ class Trash extends Item {
     Vector2? size,
   }) : super(name: name, sprite: sprite, position: position, size: size);
 
+  double hungerPenalty = 40.0;
+
   @override
   void eat(Player player) {
     // Reset combo and apply trash penalties/effects on the player.
@@ -87,7 +89,7 @@ class Trash extends Item {
       'Ate trash! Score: ${player.score}, Combo reset to ${player.combo}',
     );
     // Penalize hunger
-    player.changeHunger(-40.0);
+    player.changeHunger(-hungerPenalty);
     // Visual feedback and UI shake handled by helper methods.
     _flashPlayer(player);
     _shakeHungerBar(player);

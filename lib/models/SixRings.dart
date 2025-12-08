@@ -15,6 +15,7 @@ class Sixrings extends Trash {
 
   @override
   Future<void> onLoad() {
+    super.hungerPenalty = 50.0;
     return super.onLoad();
   }
 
@@ -27,6 +28,7 @@ class Sixrings extends Trash {
   void eat(Player player) {
     debugPrint('Six Rings eaten by player, -40 points and combo reset');
     super.eat(player);
-    // TODO: implement any additional effects specific to Six Rings here
+    // immobilizes for 3 seconds
+    player.applySpeedMultiplier(3.0, 0.0);
   }
 }

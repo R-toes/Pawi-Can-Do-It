@@ -15,6 +15,7 @@ class PlasticBag extends Trash {
 
   @override
   Future<void> onLoad() {
+    super.hungerPenalty = 30.0;
     return super.onLoad();
   }
 
@@ -27,6 +28,7 @@ class PlasticBag extends Trash {
   void eat(Player player) {
     debugPrint('Plastic Bag eaten by player, -30 points and combo reset');
     super.eat(player);
-    // TODO: implement any additional effects specific to Plastic Bag here
+    // inverts for 5 seconds
+    player.invertControls(5.0);
   }
 }
