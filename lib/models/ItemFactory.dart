@@ -6,8 +6,11 @@ import 'package:pawicandoit/models/Anchovies.dart';
 import 'package:pawicandoit/models/Item.dart';
 import 'package:flame/flame.dart';
 import 'package:pawicandoit/models/Jellyfish.dart';
+import 'package:pawicandoit/models/PlasticBag.dart';
 import 'package:pawicandoit/models/Seaweed.dart';
 import 'package:flame/extensions.dart';
+import 'package:pawicandoit/models/SixRings.dart';
+import 'package:pawicandoit/models/Straw.dart';
 
 class ItemFactory {
   int seed;
@@ -60,13 +63,21 @@ class ItemFactory {
         return Jellyfish(position: position);
       }
     } else {
+      final double trashRand = _rng.nextDouble();
       // Trash category
-      debugPrint('Spawning Trash Item');
-      return Trash(
-        name: "Trash",
-        sprite: Sprite(Flame.images.fromCache('trash.png')),
-        position: position,
-      );
+      const double strawProb = 0.7; // 50%
+      const double bagProb = 0.25; // 30%
+      // sixpackProb = 0.05; // 20%
+      if (trashRand < strawProb) {
+        debugPrint('Spawning Trash Item: Straw');
+        return Straw(position: position);
+      } else if (trashRand < strawProb + bagProb) {
+        debugPrint('Spawning Trash Item: Plastic Bag');
+        return PlasticBag(position: position);
+      } else {
+        debugPrint('Spawning Trash Item: Six-Pack Ring');
+        return Sixrings(position: position);
+      }
     }
   }
 }
