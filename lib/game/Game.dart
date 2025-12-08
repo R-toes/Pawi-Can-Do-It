@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:pawicandoit/components/ItemSpawnerComponent.dart';
 import 'package:pawicandoit/game/ui_manager.dart';
+import 'package:pawicandoit/game/score_display.dart';
+import 'package:pawicandoit/game/combo_display.dart';
 import 'package:pawicandoit/game/hunger_bar.dart';
 import 'package:pawicandoit/models/player.dart';
 
@@ -38,32 +40,25 @@ class Game extends FlameGame with HasCollisionDetection {
       joystick: joystick,
     );
 
-    // Create UI manager and add some example UI components
+    // Create UI manager and add HUD components
     uiManager = UIManager(this);
     final textPaint = TextPaint(
       style: const TextStyle(color: Colors.white, fontSize: 18),
     );
-    uiManager.addTextComponent(
-      'score',
-      text: 'Score: 0',
+
+    // Score display (custom DataReceiver that pulses on increases)
+    final scoreDisplay = ScoreDisplay(
       position: Vector2(10, 30),
       textPaint: textPaint,
     );
+    uiManager.addComponent('score', scoreDisplay);
 
-    // Add combo UI positioned above the joystick on the left side
-    uiManager.addTextComponent(
-      'combo',
-      text: '0 x',
-      // place near left edge; vertical position will be above joystick
+    // Combo display (custom DataReceiver) positioned above the joystick
+    final comboDisplay = ComboDisplay(
       position: Vector2(size.x - 50, joystick.position.y - 150),
       textPaint: textPaint,
     );
-
-    // Ensure the combo text is anchored bottom-left so it sits above joystick
-    final comboComp = uiManager.get('combo');
-    if (comboComp is TextComponent) {
-      comboComp.anchor = Anchor.bottomLeft;
-    }
+    uiManager.addComponent('combo', comboDisplay);
 
     // Add hunger bar positioned above the joystick at the right side
     final double hungerBarWidth = 140;

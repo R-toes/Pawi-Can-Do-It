@@ -102,7 +102,7 @@ class Player extends SpriteComponent
     score += i * combo;
     // Update UI via the game's UIManager if available
     try {
-      game.uiManager.setData('score', 'Score: $score');
+      game.uiManager.setData('score', '$score');
     } catch (_) {
       // game or uiManager might not be available yet; ignore silently
     }
