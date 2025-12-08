@@ -11,22 +11,30 @@ class ItemSpawnerComponent extends PositionComponent
     with HasGameReference<Game> {
   List<Item> spawnedItems = [];
 
-  final int foodSpawnRate = 50;
-  final int trashSpawnRate = 50;
+  // Probability to spawn an item on each update call (0.0 - 1.0).
+  // Tune this value to change overall spawn frequency. Default is ~1/120.
+  double spawnProbability = 1 / 60;
+
+  // Category chance weights (food, trash). Default 50:50
+  List<int> spawnChances = [50, 50];
+
   int bottomLimit = 600;
 
   late final ItemFactory itemFactory;
 
-  ItemSpawnerComponent() {
-    // set position on top of the screen
-    itemFactory = ItemFactory(weights: [foodSpawnRate, trashSpawnRate]);
+  ItemSpawnerComponent({double? spawnProbability, List<int>? spawnChances}) {
+    this.spawnProbability = spawnProbability ?? this.spawnProbability;
+    this.spawnChances = spawnChances ?? this.spawnChances;
+
+    itemFactory = ItemFactory(
+      weights: this.spawnChances,
+      spawnProbability: this.spawnProbability,
+    );
 
     // set position on top of the screen
     position = Vector2(0, 0);
     size = Vector2(700, 50); // assuming game width is 800
   }
-
-  int counter = 0;
 
   @override
   async.FutureOr<void> onLoad() {
@@ -35,22 +43,27 @@ class ItemSpawnerComponent extends PositionComponent
 
   @override
   void update(double dt) {
-    counter++;
-    if (counter >= 120) {
-      counter = 0;
-      // spawn an item
-      final item = itemFactory.generateRandomItem(
-        fromX: 0,
-        toX: game.size.x.toInt(),
-      );
+    // Ask the factory whether to spawn right now. It will return null when no spawn.
+    final Item? item = itemFactory.maybeGenerateItem(
+      fromX: 0,
+      toX: game.size.x.toInt(),
+    );
+
+    if (item != null) {
       spawnedItems.add(item);
       game.add(item);
     }
-    for (final item in spawnedItems) {
+
+    // Iterate backwards so we can remove items from the list safely.
+    for (int i = spawnedItems.length - 1; i >= 0; i--) {
+      final item = spawnedItems[i];
       if (item.position.y > bottomLimit) {
-        bottomLimit += 1;
+        // Decrement the bottom limit once for this item, remove it from
+        // the game and from our spawned list so it doesn't trigger again.
+        bottomLimit -= 1;
         item.removeFromParent();
-        debugPrint('incrementing bottom limit to $bottomLimit');
+        spawnedItems.removeAt(i);
+        debugPrint('decrementing bottom limit to $bottomLimit');
       }
     }
     super.update(dt);
