@@ -69,4 +69,19 @@ class ItemSpawnerComponent extends PositionComponent
     }
     super.update(dt);
   }
+
+  /// Remove all currently spawned items from the game and clear internal
+  /// tracking state. Also reset spawner counters (like `bottomLimit`) to
+  /// sensible defaults so a new run starts clean.
+  void clearSpawnedItems() {
+    try {
+      for (final item in spawnedItems) {
+        try {
+          item.removeFromParent();
+        } catch (_) {}
+      }
+    } catch (_) {}
+    spawnedItems.clear();
+    bottomLimit = 600;
+  }
 }

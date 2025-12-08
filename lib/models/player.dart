@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/animation.dart';
 
 import 'package:pawicandoit/game/Game.dart' show Game;
 import 'package:pawicandoit/models/Item.dart';
-import 'package:pawicandoit/models/Seaweed.dart';
+// Seaweed import removed (not used here)
 
 class Player extends SpriteComponent
     with HasGameReference<Game>, CollisionCallbacks {
@@ -35,19 +37,12 @@ class Player extends SpriteComponent
   final double hungerDecayPerSecond = 2.5;
   bool ignoreTrash = false;
   bool _flippedNegative = false;
+  // Tilt/angle behavior
+  final double _maxTilt = math.pi / 4; // 45 degrees
+  final double _tiltSmoothing = 8.0;
 
   @override
   FutureOr<void> onLoad() {
-    // TODO: implement onLoad
-    add(
-      RectangleComponent(
-        size: size,
-        anchor: Anchor.center,
-        position: size / 2,
-        paint: Paint()..color = const Color.fromARGB(100, 255, 0, 0),
-      ),
-    );
-
     add(RectangleHitbox());
     return super.onLoad();
   }
@@ -77,6 +72,26 @@ class Player extends SpriteComponent
         game.size.y - (size.y / 2 + 200),
       );
     }
+    // Tilt the sprite based on vertical input (smoothly lerped).
+    // Take horizontal flip into account so the visual "nose" always
+    // tilts in the expected direction when the sprite is mirrored.
+    try {
+      final inputY = (joystick.direction == JoystickDirection.idle)
+          ? 0.0
+          : joystick.relativeDelta.y.clamp(-1.0, 1.0);
+
+      // Determine horizontal flip sign. Prefer the actual horizontal scale
+      // sign (works even if flipping is done by changing `scale.x`). If
+      // scale.x is 0 for some reason, fall back to the existing boolean.
+      final flipSign = (scale.x != 0)
+          ? (scale.x < 0 ? -1.0 : 1.0)
+          : (_flippedNegative ? -1.0 : 1.0);
+
+      // Invert so that upward input tilts the nose up visually, taking
+      // horizontal mirroring into account.
+      final desired = inputY * _maxTilt * flipSign;
+      angle += (desired - angle) * (_tiltSmoothing * dt);
+    } catch (_) {}
     // Hunger decays over time regardless of movement
     changeHunger(-hungerDecayPerSecond * dt);
 
@@ -139,9 +154,10 @@ class Player extends SpriteComponent
         return;
       }
 
-      resetCombo();
-      debugPrint('Ate trash! Score: $score, Combo reset to $combo');
-      changeHunger(-40.0);
+      // Delegate trash-specific effects and penalties to the item itself.
+      try {
+        item.eat(this);
+      } catch (_) {}
     }
   }
 
@@ -169,13 +185,41 @@ class _InvulnerabilityTimer extends Component with HasGameReference<Game> {
   _InvulnerabilityTimer(this.player, double seconds) : remaining = seconds;
 
   @override
+  void onMount() {
+    super.onMount();
+    // Add a subtle golden glow child to the player while invulnerable
+    try {
+      player.add(_InvulnerabilityGlow(player.size));
+    } catch (_) {}
+  }
+
+  @override
   void update(double dt) {
     if (!game.isPlaying) return;
     remaining -= dt;
     if (remaining <= 0) {
       player.ignoreTrash = false;
       debugPrint('Invulnerability ended');
+      // remove any glow children added earlier
+      try {
+        player.children
+            .where((c) => c.runtimeType.toString() == '_InvulnerabilityGlow')
+            .toList()
+            .forEach((c) {
+              c.removeFromParent();
+            });
+      } catch (_) {}
       removeFromParent();
     }
   }
+}
+
+class _InvulnerabilityGlow extends RectangleComponent {
+  _InvulnerabilityGlow(Vector2 size)
+    : super(
+        size: size * 1.2,
+        anchor: Anchor.center,
+        position: size / 2,
+        paint: Paint()..color = const Color(0xFFFFD54F).withOpacity(0.35),
+      );
 }

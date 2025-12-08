@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 
 import 'ui_manager.dart';
@@ -52,5 +53,28 @@ class HungerBarComponent extends PositionComponent implements DataReceiver {
 
     // draw border
     canvas.drawRect(rect, _borderPaint);
+  }
+
+  /// Play a short horizontal shake effect to indicate damage or impact.
+  void shake({
+    double amplitude = 6.0,
+    int repeats = 6,
+    double singleDuration = 0.05,
+  }) {
+    try {
+      add(
+        MoveEffect.by(
+          Vector2(amplitude, 0),
+          EffectController(
+            duration: singleDuration,
+            reverseDuration: singleDuration,
+            repeatCount: repeats,
+            curve: Curves.easeInOut,
+          ),
+        ),
+      );
+    } catch (_) {
+      // If effects are unavailable for some reason, ignore silently.
+    }
   }
 }

@@ -11,6 +11,7 @@ import 'package:pawicandoit/game/score_display.dart';
 import 'package:pawicandoit/game/combo_display.dart';
 import 'package:pawicandoit/game/hunger_bar.dart';
 import 'package:pawicandoit/models/player.dart';
+import 'package:pawicandoit/models/Item.dart';
 
 enum GameState { playing, paused, gameover }
 
@@ -128,23 +129,58 @@ class Game extends FlameGame with HasCollisionDetection {
   /// Basic reset: restore player hunger/position and remove items.
   /// This is intentionally simple; further reset logic can be added.
   void resetGame() {
-    // Try to reset player directly if available
-    Component? p;
+    // Restore global defaults
     try {
-      p = children.firstWhere((c) => c.runtimeType.toString() == 'Player');
-    } catch (_) {
-      p = null;
-    }
-    if (p != null) {
-      try {
-        final player = p as dynamic;
-        player.hunger = 100.0;
-        player.position = Vector2(size.x / 2, size.y / 2);
-        uiManager.setData('hunger', player.hunger);
-      } catch (_) {}
-    }
+      Item.speed = 100.0;
+    } catch (_) {}
+
+    // Remove timer-like components by matching runtimeType name. These are
+    // used for invulnerability and slowdown effects; removing them avoids
+    // lingering effects after a reset.
+    try {
+      final toRemove = <Component>[];
+      for (final c in children) {
+        final name = c.runtimeType.toString();
+        if (name.contains('Invulnerability') ||
+            name.contains('SlowdownTimer')) {
+          toRemove.add(c);
+        }
+      }
+      for (final c in toRemove) c.removeFromParent();
+    } catch (_) {}
+
+    // Reset player state
+    try {
+      player.score = 0;
+      player.resetCombo();
+      player.hunger = 100.0;
+      player.ignoreTrash = false;
+      player.position = Vector2(size.x / 2, size.y / 2);
+      uiManager.setData('score', '0');
+      uiManager.setData('combo', '1 x');
+      uiManager.setData('hunger', player.hunger);
+    } catch (_) {}
+
+    // Clear spawned items via the spawner helper
+    try {
+      itemSpawner.clearSpawnedItems();
+    } catch (_) {}
+
+    // Also remove known item class instances in case any were spawned outside
+    // the spawner list. This covers Seaweed, Anchovies, Jellyfish and Trash.
+    try {
+      final itemNames = ['Seaweed', 'Anchovies', 'Jellyfish', 'Trash'];
+      for (final c in children.toList()) {
+        final name = c.runtimeType.toString();
+        if (itemNames.contains(name)) {
+          c.removeFromParent();
+        }
+      }
+    } catch (_) {}
+
     overlays.remove('GameOver');
-    resumeGame();
     if (!overlays.isActive('PauseButton')) overlays.add('PauseButton');
+    _gameState = GameState.playing;
+    resumeEngine();
   }
 }
