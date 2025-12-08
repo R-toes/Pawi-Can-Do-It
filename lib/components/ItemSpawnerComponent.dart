@@ -43,6 +43,7 @@ class ItemSpawnerComponent extends PositionComponent
 
   @override
   void update(double dt) {
+    if (!game.isPlaying) return;
     // Ask the factory whether to spawn right now. It will return null when no spawn.
     final Item? item = itemFactory.maybeGenerateItem(
       fromX: 0,

@@ -29,6 +29,10 @@ class Player extends SpriteComponent
   final JoystickComponent joystick;
   int score = 0;
   int combo = 1;
+  // hunger value ranges from 0..100
+  double hunger = 100.0;
+  // hunger loss in units per second (2.5 units == 2.5% of 100 per second)
+  final double hungerDecayPerSecond = 2.5;
   bool ignoreTrash = false;
   bool _flippedNegative = false;
 
@@ -50,6 +54,7 @@ class Player extends SpriteComponent
 
   @override
   void update(double dt) {
+    if (!game.isPlaying) return;
     if (joystick.direction != JoystickDirection.idle) {
       position.add(joystick.relativeDelta * maxSpeed * dt);
 
@@ -72,7 +77,25 @@ class Player extends SpriteComponent
         game.size.y - (size.y / 2 + 200),
       );
     }
+    // Hunger decays over time regardless of movement
+    changeHunger(-hungerDecayPerSecond * dt);
+
     super.update(dt);
+  }
+
+  /// Adjust hunger by [delta] (positive or negative) and notify UI.
+  void changeHunger(double delta) {
+    hunger = (hunger + delta).clamp(0.0, 100.0);
+    try {
+      game.uiManager.setData('hunger', hunger);
+    } catch (_) {
+      // uiManager might not be available yet — ignore silently
+    }
+    if (hunger <= 0) {
+      try {
+        game.gameOver();
+      } catch (_) {}
+    }
   }
 
   void addScore(int i) {
@@ -108,6 +131,8 @@ class Player extends SpriteComponent
   void eat(Item item) {
     if (item is Food) {
       item.eat(this);
+      // restore some hunger when eating food
+      changeHunger(20.0);
     } else if (item is Trash) {
       if (ignoreTrash) {
         debugPrint('Ignored trash while invulnerable');
@@ -116,15 +141,41 @@ class Player extends SpriteComponent
 
       resetCombo();
       debugPrint('Ate trash! Score: $score, Combo reset to $combo');
+      changeHunger(-40.0);
     }
   }
 
   void applyInvulnerability(double seconds) {
     ignoreTrash = true;
     debugPrint('Invulnerability started for $seconds seconds');
-    Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()), () {
-      ignoreTrash = false;
+    // Use a pause-aware timer component instead of Future.delayed so the effect
+    // respects pause/resume.
+    try {
+      game.add(_InvulnerabilityTimer(this, seconds));
+    } catch (_) {
+      // Fallback to Future.delayed if adding component fails for some reason
+      Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()), () {
+        ignoreTrash = false;
+        debugPrint('Invulnerability ended');
+      });
+    }
+  }
+}
+
+class _InvulnerabilityTimer extends Component with HasGameReference<Game> {
+  final Player player;
+  double remaining;
+
+  _InvulnerabilityTimer(this.player, double seconds) : remaining = seconds;
+
+  @override
+  void update(double dt) {
+    if (!game.isPlaying) return;
+    remaining -= dt;
+    if (remaining <= 0) {
+      player.ignoreTrash = false;
       debugPrint('Invulnerability ended');
-    });
+      removeFromParent();
+    }
   }
 }

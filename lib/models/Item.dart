@@ -2,8 +2,10 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:pawicandoit/models/player.dart';
+import 'package:pawicandoit/game/Game.dart' show Game;
 
-abstract class Item extends PositionComponent with CollisionCallbacks {
+abstract class Item extends PositionComponent
+    with CollisionCallbacks, HasGameReference<Game> {
   final String name;
   final Sprite sprite;
 
@@ -30,6 +32,7 @@ abstract class Item extends PositionComponent with CollisionCallbacks {
 
   @override
   void update(double dt) {
+    if (!game.isPlaying) return;
     position += Vector2(0, 1 * Item.speed) * dt;
     super.update(dt);
   }

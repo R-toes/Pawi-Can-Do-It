@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:pawicandoit/components/ItemSpawnerComponent.dart';
 import 'package:pawicandoit/game/ui_manager.dart';
+import 'package:pawicandoit/game/hunger_bar.dart';
 import 'package:pawicandoit/models/player.dart';
+
+enum GameState { playing, paused, gameover }
 
 class Game extends FlameGame with HasCollisionDetection {
   late Player player;
@@ -62,6 +65,17 @@ class Game extends FlameGame with HasCollisionDetection {
       comboComp.anchor = Anchor.bottomLeft;
     }
 
+    // Add hunger bar positioned above the joystick at the right side
+    final double hungerBarWidth = 140;
+    final double hungerBarHeight = 14;
+    final hungerBar = HungerBarComponent(
+      position: Vector2(hungerBarWidth, joystick.position.y - 150),
+      size: Vector2(hungerBarWidth, hungerBarHeight),
+      anchor: Anchor.bottomRight,
+    );
+    uiManager.addComponent('hunger', hungerBar);
+    uiManager.setData('hunger', 100.0);
+
     // Note: avatar sprite removed from UIManager — UI is focused on in-game UI
 
     // TODO: Implement adding background here
@@ -89,5 +103,53 @@ class Game extends FlameGame with HasCollisionDetection {
     );
 
     return joystick;
+  }
+
+  // Game state management
+  GameState _gameState = GameState.playing;
+
+  bool get isPlaying => _gameState == GameState.playing;
+
+  void pauseGame() {
+    if (_gameState == GameState.paused) return;
+    _gameState = GameState.paused;
+    pauseEngine();
+  }
+
+  void resumeGame() {
+    if (_gameState == GameState.playing) return;
+    _gameState = GameState.playing;
+    resumeEngine();
+  }
+
+  void gameOver() {
+    if (_gameState == GameState.gameover) return;
+    _gameState = GameState.gameover;
+    pauseEngine();
+    overlays.add('GameOver');
+    overlays.remove('PauseButton');
+  }
+
+  /// Basic reset: restore player hunger/position and remove items.
+  /// This is intentionally simple; further reset logic can be added.
+  void resetGame() {
+    // Try to reset player directly if available
+    Component? p;
+    try {
+      p = children.firstWhere((c) => c.runtimeType.toString() == 'Player');
+    } catch (_) {
+      p = null;
+    }
+    if (p != null) {
+      try {
+        final player = p as dynamic;
+        player.hunger = 100.0;
+        player.position = Vector2(size.x / 2, size.y / 2);
+        uiManager.setData('hunger', player.hunger);
+      } catch (_) {}
+    }
+    overlays.remove('GameOver');
+    resumeGame();
+    if (!overlays.isActive('PauseButton')) overlays.add('PauseButton');
   }
 }
