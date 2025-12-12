@@ -3,8 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pawicandoit/services/auth_service.dart';
 import 'package:pawicandoit/screens/login_screen.dart'; // To navigate back on sign out
-// Import your game files - adjust if your game file is named differently
-import 'package:flame/game.dart'show GameWidget;
+import 'package:flame/game.dart' show GameWidget;
 import 'package:pawicandoit/game/Game.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,120 +22,170 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Get the currently logged-in user when the screen loads
     _currentUser = _authService.getCurrentUser();
-    // Fetch user data from Firestore
     _fetchUserData();
   }
 
-  // Fetches the user's document from Firestore to get their username
   Future<void> _fetchUserData() async {
     if (_currentUser != null) {
-      // Get the document snapshot from the 'users' collection
       DocumentSnapshot userDoc =
       await _firestore.collection('users').doc(_currentUser!.uid).get();
-
-      // Check if the document exists and then update the state
-      if (userDoc.exists) {
+      if (userDoc.exists && mounted) {
         setState(() {
-          // Cast the data to a Map and get the 'username' field
           _username = (userDoc.data() as Map<String, dynamic>)['username'];
         });
       }
     }
   }
 
-  // Method to handle signing out
   Future<void> _signOut() async {
     await _authService.signOut();
-    // After signing out, replace the home screen with the login screen
-    // This prevents the user from pressing 'back' and returning to the home screen
+    if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (Route<dynamic> route) => false, // This predicate removes all previous routes
+          (Route<dynamic> route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Shared text shadow style for better readability on the background
+    const shadowStyle = [
+      Shadow(
+        blurRadius: 10.0,
+        color: Colors.black87,
+        offset: Offset(2.0, 2.0),
+      ),
+    ];
+
     return Scaffold(
+      extendBodyBehindAppBar: true, // Allows the body to go behind the AppBar
       appBar: AppBar(
-        title: const Text('Home'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
-          // Add a sign-out button to the app bar
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _signOut,
             tooltip: 'Sign Out',
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Welcome message
-              // It shows a loading text until the username is fetched
-              Text(
-                'Welcome,',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24, color: Colors.grey[700]),
-              ),
-              Text(
-                _username ?? 'Loading...', // Display username or 'Loading...'
-                textAlign: TextAlign.center,
-                style:
-                const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 60),
+      body: Container(
+        // Set the background for the entire screen
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/tortol_bg.png"),
+            fit: BoxFit.fill,
+          ),
+        ),
+        // Use SafeArea to avoid UI overlapping with system notches (like the time, battery icon)
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // MODIFICATION: Removed the Spacer and added a small fixed gap.
+                // You can remove this SizedBox to move it even higher.
+                const SizedBox(height: 16.0),
 
-              // Play Game Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  textStyle: const TextStyle(fontSize: 22),
+                // Logo
+                Image.asset(
+                  'assets/images/pawiCanDoIt_logo.png',
+                  height: 200, // Adjusted height from 225 to 200
                 ),
-                onPressed: () {
-                  // First, make sure we have a user before starting the game
-                  if (_currentUser != null) {
-                    // When pressed, navigate to the Flame GameWidget
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => GameWidget(
-                          // Pass the user's ID into your Game class constructor
-                          game: Game(userId: _currentUser!.uid),
+                const SizedBox(height: 50),
+
+                // Styled Welcome Text
+                const Text(
+                  'Welcome,',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    shadows: shadowStyle,
+                  ),
+                ),
+                Text(
+                  _username ?? 'Loading...',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: shadowStyle,
+                  ),
+                ),
+                const SizedBox(height: 50),
+
+                // "Start Game" button
+                GestureDetector(
+                  onTap: () {
+                    if (_currentUser != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              GameWidget(
+                                game: Game(userId: _currentUser!.uid),
+                              ),
                         ),
-                      ),
-                    );
-                  } else {
-                    // This is a fallback, in case the user data isn't loaded yet
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('User not loaded yet. Please wait.')),
-                    );
-                  }
-                },
-                child: const Text('Play Game'),
-              ),
-              const SizedBox(height: 20),
-
-              // (Optional) Button to view scores - we can build this next
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: const TextStyle(fontSize: 18),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('User not loaded yet. Please wait.')),
+                      );
+                    }
+                  },
+                  child: Image.asset(
+                    'assets/images/startGameButton.png',
+                    height: 60,
+                  ),
                 ),
-                onPressed: () {
-                  // We will create a ScoreScreen later
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Score screen coming soon!')),
-                  );
-                },
-                child: const Text('View My Scores'),
-              ),
-            ],
+                const SizedBox(height: 20),
+
+                // "Leaderboards" button
+                GestureDetector(
+                  onTap: () {
+                    // This can be updated later to navigate to a new screen
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Leaderboard screen coming soon!')),
+                    );
+                  },
+                  child: Image.asset(
+                    'assets/images/leaderboardsButton.png',
+                    height: 60,
+                  ),
+                ),
+
+                // Spacer to push the SDG text to the bottom
+                const Spacer(),
+
+                // --- MODIFICATION START ---
+                // SDG 14 Text Container
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  margin: const EdgeInsets.only(bottom: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5), // Semi-transparent black background
+                    borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                  ),
+                  child: const Text(
+                    'SDG 14: Life Below Water\nHighlights marine conservation and addresses ocean pollution challenges.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white, // Changed from white70 to white
+                      fontSize: 14,      // Increased font size
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                // --- MODIFICATION END ---
+              ],
+            ),
           ),
         ),
       ),
